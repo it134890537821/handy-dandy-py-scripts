@@ -5,7 +5,7 @@ from subprocess import run
 
 def executeFFmpeg(arglist):
     try:
-        run(arglist)
+        run(arglist, check=False)
     except FileNotFoundError:
         print("\033[91mERROR:\033[0m FFmpeg is not installed or added to PATH")
 

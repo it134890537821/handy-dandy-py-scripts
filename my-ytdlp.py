@@ -104,6 +104,6 @@ if args.metadata:
     ytdlp.extend(["--add-metadata", "--embed-thumbnail"])
 
 try:
-    run(ytdlp)
+    run(ytdlp, check=False)
 except FileNotFoundError:
     print("\033[91mERROR:\033[0m yt-dlp is not installed or added to PATH")
