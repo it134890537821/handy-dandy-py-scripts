@@ -66,6 +66,13 @@ parser.add_argument(
     type=str,
     help="items to download, for example '1:3,7,-5::2' on a playlist of size 15 will download 1,2,3,7,11,13,15",
 )
+parser.add_argument(
+    "-c",
+    "--cookies-from-browser",
+    type=str,
+    default="firefox",
+    help="specified browser to grab cookies from to signal you're not a bot",
+)
 parser.add_argument("-p", "--path", type=dir_path, default=os.getcwd(), help="set path")
 parser.add_argument(
     "-t",
@@ -79,36 +86,19 @@ parser.add_argument("-v", "--version", action="version", version="%(prog)s v1.0"
 
 args = parser.parse_args()
 
-ytdlp = ["yt-dlp", *args.url, "-P", args.path, "--format", "bestvideo+bestaudio"]
+ytdlp = ["yt-dlp", *args.url, "-P", args.path, "--cookies-from-browser", args.cookies_from_browser,
+    "--remote-components", "ejs:github", "--extractor-args", "youtube:player-client=web_embedded"]
 
-if args.force_h264:
-    if not args.audio:
-        ytdlp.extend(
-            [
-                "--exec",
-                "ffmpeg -i {} -c:v libx264 -c:a aac -strict -2 {}_AVC.mp4",
-                "--exec",
-                "del {}" if sys.platform == "win32" else "rm {}",
-            ]
-        )
-    else:
-        ytdlp.extend(
-            [
-                "--exec",
-                "ffmpeg -i {} -vn -ar 44100 -ac 2 -b:a 192k {}_AVC.mp3",
-                "--exec",
-                "del {}" if sys.platform == "win32" else "rm {}",
-            ]
-        )
+if args.audio:
+    ytdlp.extend(["-f", "ba[acodec^=mp4a]", "--extract-audio", "--audio-format", "mp3", "--audio-quality", "3"])
+else:
+    ytdlp.extend(["-f","bv*[vcodec~='^(avc1|h264)']+ba[acodec~='^(mp4a|aac)']/b[ext=mp4]", "--merge-output-format", "mp4"])
 
 if args.items:
     ytdlp.extend(["-I", args.items])
 
 if args.trim:
     ytdlp.extend(["--download-sections", f"*{args.trim}", "-S", "proto:https"])
-
-if args.audio:
-    ytdlp.extend(["--extract-audio", "--audio-format", "mp3", "--audio-quality", "3"])
 
 if args.metadata:
     ytdlp.extend(["--add-metadata", "--embed-thumbnail"])
