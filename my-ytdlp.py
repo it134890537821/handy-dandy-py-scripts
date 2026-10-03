@@ -70,7 +70,6 @@ parser.add_argument(
     "-c",
     "--cookies-from-browser",
     type=str,
-    default="firefox",
     help="specified browser to grab cookies from to signal you're not a bot",
 )
 parser.add_argument("-p", "--path", type=dir_path, default=os.getcwd(), help="set path")
@@ -86,7 +85,7 @@ parser.add_argument("-v", "--version", action="version", version="%(prog)s v1.0"
 
 args = parser.parse_args()
 
-ytdlp = ["yt-dlp", *args.url, "-P", args.path, "--cookies-from-browser", args.cookies_from_browser,
+ytdlp = ["yt-dlp", *args.url, "-P", args.path,
     "--remote-components", "ejs:github", "--extractor-args", "youtube:player-client=web_embedded"]
 
 if args.audio:
@@ -102,6 +101,9 @@ if args.trim:
 
 if args.metadata:
     ytdlp.extend(["--add-metadata", "--embed-thumbnail"])
+
+if args.cookies_from_browser:
+    ytdlp.extend(["--cookies-from-browser", args.cookies_from_browser])
 
 try:
     run(ytdlp, check=False)
